@@ -1,0 +1,57 @@
+[project]
+name = "tagmaster"
+version = "0.1.0"
+description = "Complète les tags d'une sélection de fichiers MP3"
+readme = "README.md"
+authors = [{name = "JYM"}]
+requires-python = ">=3.14"
+dependencies = [
+    "mutagen>=1.47.0",
+]
+
+[project.scripts]
+tagmaster = "tagmaster.main:main"
+
+[tool.uv]
+managed = true
+package = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pyright]
+include = ["src","tests"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.*",         # Exclut .git, .venv, .ruff_cache
+    "**/*.egg-info",
+    ".venv" 
+]
+venvPath = "."
+venv = ".venv"
+extraPaths = ["src"]
+pythonVersion = "3.14"
+typeCheckingMode = "basic"
+
+[tool.ruff]
+src = ["src"]
+line-length = 120
+target-version = "py314"
+extend-exclude = [".venv", "**/__pycache__"]
+
+[tool.ruff.lint]
+select = ["A", "E", "F", "W", "D", "I", "UP", "B"]
+ignore = ["D100", "D202", "D205", "D212", "D400", "D401", "D403", "D415"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
