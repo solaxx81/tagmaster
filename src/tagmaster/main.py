@@ -5,6 +5,7 @@ from mutagen.easyid3 import EasyID3
 
 def traiter_fichier_mp3(chemin_fichier: Path):
     """S'occupe de la lecture des tags d'un seul fichier."""
+
     try:
         audio = EasyID3(chemin_fichier)
 
@@ -13,15 +14,31 @@ def traiter_fichier_mp3(chemin_fichier: Path):
         liste_artiste = audio.get("artist", [])
         liste_titre = audio.get("title", [])
         liste_album = audio.get("album", [])
-        liste_date = audio.get("date", [])
+        # liste_date = audio.get("date", [])
         artiste = liste_artiste[0] if liste_artiste else "Artiste Inconnu"
         titre = liste_titre[0] if liste_titre else "Titre Inconnu"
         album = liste_album[0] if liste_album else "Album Inconnu"
-        date = liste_date[0] if liste_date else "Date Inconnue"
+        # date = liste_date[0] if liste_date else "Date Inconnue"
 
-        print(f"'{chemin_fichier.name}' - [{artiste}] - {titre} (Album: {album} - Année: {date})")
-    except Exception as e:
-        print(f"Erreur : Aucun tag dans le fichier {chemin_fichier.name} ({e})")
+        if artiste == "Artiste Inconnu" or titre == "Titre Inconnu":
+            nom_pur = chemin_fichier.stem
+            if '-' in nom_pur:
+                partie_artiste,partie_titre=nom_pur.split(" - ",1)
+                artiste=partie_artiste.strip()
+                titre=partie_titre.strip()
+            else:
+                # A voir plus tard, mais fichier mal nommé dès le départ. pas traité pour l'instant
+                return None
+
+
+        if album == "Album Inconnu":
+            return [artiste, titre]
+        else:
+            return None
+
+    except Exception:
+        # Fichier mal formé ou vérolé
+        return None
 
 
 def main():
@@ -37,12 +54,13 @@ def main():
         return
 
     # 3. Boucle sur les fichiers
+    morceau_a_completer: list[list[str]] = []
     for fichier in dossier.glob("*.mp3"):
-        traiter_fichier_mp3(fichier)
+        infos = traiter_fichier_mp3(fichier)
+        if infos:
+            morceau_a_completer.append(infos)
 
-        # 3. Essayer de lire les tags avec EasyID3
-        # Aide : utilise un bloc "try...except" au cas où le fichier n'a aucun tag
-        # Aide : EasyID3 se comporte comme un dictionnaire Python
+    print(morceau_a_completer)
 
 
 if __name__ == "__main__":
