@@ -45,8 +45,7 @@ def traiter_fichier_mp3(chemin_fichier: Path):
 
 
 def obtenir_liste_unique(artiste, titre):
-    """
-    Nettoie la liste d'albums potentiels de tous les albums
+    """Nettoie la liste d'albums potentiels de tous les albums
     non-officiels, live, bootleg, compilation, etc
     """
 
