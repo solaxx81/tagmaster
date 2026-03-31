@@ -1,21 +1,17 @@
-# Security Policy
+# Politique de sécurité
 
-## Supported Versions
+## Versions supportées
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Seule la dernière version stable de **tagmaster** bénéficie de mises à jour de sécurité.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| Version | Supportée |
+| ------- | --------- |
+| Dernière stable | :white_check_mark: |
+| < Dernière stable | :x: |
 
-## Reporting a Vulnerability
+## Signaler une vulnérabilité
 
-Use this section to tell people how to report a vulnerability.
+Si tu découvres une faille de sécurité, merci de ne pas ouvrir d'Issue publique. 
+Envoie plutôt un message privé via [ton moyen de contact ou utilise les GitHub Security Advisories]. 
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Je ferai de mon mieux pour répondre sous 48h.
