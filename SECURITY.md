@@ -1,17 +1,32 @@
-# Politique de sécurité
+# Security Policy / Politique de Sécurité
 
-## Versions supportées
+## Supported Versions / Versions Supportées
 
-Seule la dernière version stable de **tagmaster** bénéficie de mises à jour de sécurité.
+| Version | Supported / Supportée |
+| ------- | ------------------ |
+| Latest stable / Dernière stable | :white_check_mark: |
+| < Latest / < Dernière | :x: |
 
-| Version | Supportée |
-| ------- | --------- |
-| Dernière stable | :white_check_mark: |
-| < Dernière stable | :x: |
+---
 
-## Signaler une vulnérabilité
+## Reporting a Vulnerability (English)
 
-Si tu découvres une faille de sécurité, merci de ne pas ouvrir d'Issue publique. 
-Envoie plutôt un message privé via [ton moyen de contact ou utilise les GitHub Security Advisories]. 
+If you discover a security vulnerability, please do **not** open a public issue. 
+Instead, use GitHub's private reporting system:
+1. Go to the **Security** tab of this repository.
+2. Click on **Security advisories**.
+3. Click on **New draft security advisory**.
 
-Je ferai de mon mieux pour répondre sous 48h.
+I will do my best to acknowledge your report as soon as possible.
+
+---
+
+## Signaler une vulnérabilité (Français)
+
+Si tu découvres une faille de sécurité, merci de **ne pas** ouvrir d'issue publique. 
+Utilise plutôt le système de signalement privé de GitHub :
+1. Rends-toi sur l'onglet **Security** de ce dépôt.
+2. Clique sur **Security advisories**.
+3. Clique sur **New draft security advisory**.
+
+Je ferai de mon mieux pour accuser réception de ton signalement dans les plus brefs délais.
