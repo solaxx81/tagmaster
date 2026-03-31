@@ -35,7 +35,7 @@ def traiter_fichier_mp3(chemin_fichier: Path):
                 return None
 
         if album == "Album Inconnu":
-            return [artiste, titre]
+            return [artiste, titre, chemin_fichier]
         else:
             return None
 
@@ -101,7 +101,7 @@ def main():
         if infos:
             morceaux_a_completer.append(infos)
 
-    for artiste, titre in morceaux_a_completer:
+    for artiste, titre, chemin in morceaux_a_completer:
         print(f"\nRecherche pour : {artiste} - {titre}")
 
         options = obtenir_liste_unique(artiste, titre)
@@ -116,7 +116,9 @@ def main():
             annee = album_data.get("date", "????")
             print(f"{i}. {nom} ({annee})")
 
+        print("m. Saisir le nom de l'album")
         print("0. Passer ce morceau")
+        print("q. Quitter le programme")
 
         # 2. Demande le choix à l'utilisateur
         reponse = input("Votre choix : ")
@@ -124,12 +126,28 @@ def main():
         # 3. Logique de sélection (à toi de jouer !)
         if reponse == "0":
             continue
+        if reponse.lower() == "q":
+            break
 
-        # Indice pour récupérer l'album choisi :
-        index = int(reponse) - 1
-        album_choisi = options[index]
+        if reponse.lower() == "m":
+            album_final = input("Entrez le nom de l'album : ")
+            annee_finale = input("Entrez l'année (laisser vide si inconnu) : ")
+        else:
+            # Indice pour récupérer l'album choisi :
+            index = int(reponse) - 1
+            album_choisi = options[index]
+            album_final = album_choisi["title"]
+            annee_finale = album_choisi.get("date", "")[:4]
 
         print(f"Vous avez choisi : {album_choisi['title']}")
+        audio = EasyID3(chemin)
+
+        audio["album"] = album_final
+        if annee_finale:
+            audio["date"] = album_final[:4]  # On enregistre juste l'année
+
+        audio.save()
+        print("Fichier mis à jour avec succès !")
 
 
 if __name__ == "__main__":
