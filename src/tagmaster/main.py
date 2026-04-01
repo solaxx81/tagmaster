@@ -2,6 +2,7 @@ from pathlib import Path
 
 import musicbrainzngs
 from mutagen.easyid3 import EasyID3
+from mutagen.id3 import ID3
 
 # Configuration obligatoire pour que MusicBrainz réponde
 musicbrainzngs.set_useragent("MonTestMusic", "0.1", "mon@email.com")
@@ -11,32 +12,34 @@ def traiter_fichier_mp3(chemin_fichier: Path):
     """S'occupe de la lecture des tags d'un seul fichier."""
 
     try:
-        audio = EasyID3(chemin_fichier)
+        # Vérification des tags textes avec EasyID3 (artiste, titre, album)
+        audio_easy = EasyID3(chemin_fichier)
 
-        # On accède aux tags comme à un dictionnaire
-        # .get() est plus sûr : si le tag n'existe pas, il renverra "xxx Inconnu" au lieu de planter
-        liste_artiste = audio.get("artist", [])
-        liste_titre = audio.get("title", [])
-        liste_album = audio.get("album", [])
+        # Tags forment un dictionnaire auquel on accède par .get()
+        liste_artiste = audio_easy.get("artist", [])
+        liste_titre = audio_easy.get("title", [])
+        liste_album = audio_easy.get("album", [])
 
         artiste = liste_artiste[0] if liste_artiste else "Artiste Inconnu"
         titre = liste_titre[0] if liste_titre else "Titre Inconnu"
         album = liste_album[0] if liste_album else "Album Inconnu"
 
-        if artiste == "Artiste Inconnu" or titre == "Titre Inconnu":
-            nom_pur = chemin_fichier.stem
-            if "-" in nom_pur:
-                partie_artiste, partie_titre = nom_pur.split(" - ", 1)
-                artiste = partie_artiste.strip()
-                titre = partie_titre.strip()
-            else:
-                # A voir plus tard, mais fichier mal nommé dès le départ. pas traité pour l'instant
-                return None
+        # Vérification de la présence d'une pochette avec ID3 complet
+        a_une_pochette = False
 
-        if album == "Album Inconnu":
-            return [artiste, titre, chemin_fichier]
-        else:
-            return None
+        try:
+            audio_ID3 = ID3(chemin_fichier)
+            if any(key.startswith("APIC") for key in audio_ID3.keys()):
+                a_une_pochette = True
+        except Exception:
+            a_une_pochette = False
+
+        besoin_reparation = (
+            album == "Album Inconnu" or artiste == "Artiste Inconnu" or titre == "Titre Inconnu" or not a_une_pochette
+        )
+
+        if besoin_reparation:
+            return [artiste, titre, album, chemin_fichier, a_une_pochette]
 
     except Exception:
         # Fichier mal formé ou vérolé
