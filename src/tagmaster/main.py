@@ -47,6 +47,8 @@ def traiter_fichier_mp3(chemin_fichier: Path):
         # Fichier mal formé ou vérolé
         return None
 
+    return None
+
 
 def obtenir_liste_unique(artiste, titre):
     """Nettoie la liste d'albums potentiels de tous les albums
@@ -86,32 +88,44 @@ def obtenir_liste_unique(artiste, titre):
 
 
 def ajouter_pochette(chemin_fichier, release_id):
-    """Télécharge la pochette depuis Cover Art Archive et l'insère dans le MP3."""
-    url = f"https://coverartarchive.org/release/{release_id}/front-500"
+    """Télécharge la pochette. Si l'édition échoue, tente via le groupe d'album."""
+
+    # Tentative 1 : L'édition spécifique (votre code actuel)
+    urls_a_tester = [f"https://coverartarchive.org/release/{release_id}/front-500"]
 
     try:
-        reponse = requests.get(url, timeout=10)
-        if reponse.status_code == 200:
-            try:
-                tags = ID3(chemin_fichier)
-            except Exception:
-                tags = ID3()
+        # On récupère les infos de l'album pour trouver l'ID du groupe (Release Group)
+        # Cela nous servira de roue de secours
+        info_album = musicbrainzngs.get_release_by_id(release_id, includes=["release-groups"])
+        rg_id = info_album["release"]["release-group"]["id"]
+        urls_a_tester.append(f"https://coverartarchive.org/release-group/{rg_id}/front-500")
 
-            tags.add(
-                APIC(
-                    encoding=3,  # UTF-8
-                    mime="image/jpeg",  # format standard
-                    type=3,  # 3 = pochette avant
-                    desc="Front Cover",
-                    data=reponse.content,
+        for url in urls_a_tester:
+            reponse = requests.get(url, timeout=10)
+            if reponse.status_code == 200:
+                try:
+                    tags = ID3(chemin_fichier)
+                except Exception:
+                    tags = ID3()
+
+                tags.add(
+                    APIC(
+                        encoding=3,
+                        mime="image/jpeg",
+                        type=3,
+                        desc="Front Cover",
+                        data=reponse.content,
+                    )
                 )
-            )
-            tags.save(chemin_fichier)
-            return True
-    except Exception as e:
-        print(f"      ⚠️ Erreur pochette : {e}")
+                tags.save(chemin_fichier)
+                return True
 
-    return False
+        # Si on arrive ici, aucune des deux URLs n'a fonctionné
+        return False
+
+    except Exception as e:
+        print(f"      ⚠️ Erreur lors de la recherche d'image : {e}")
+        return False
 
 
 def main():
@@ -165,7 +179,10 @@ def main():
             album_final = input("Entrez le nom de l'album : ")
             annee_finale = input("Entrez l'année (laisser vide si inconnu) : ")
         else:
-            # Indice pour récupérer l'album choisi :
+            if not reponse.isdigit() or not (1 <= int(reponse) <= len(options)):
+                print("⚠️ Choix invalide.")
+                continue
+
             index = int(reponse) - 1
             album_choisi = options[index]
             album_final = album_choisi["title"]
