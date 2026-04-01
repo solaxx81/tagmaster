@@ -3,8 +3,8 @@ from pathlib import Path
 import musicbrainzngs
 from mutagen.easyid3 import EasyID3
 
-# Configuration (obligatoire pour que MusicBrainz nous réponde)
-musicbrainzngs.set_useragent("MonTestMusic", "0.1", "ton@email.com")
+# Configuration obligatoire pour que MusicBrainz réponde
+musicbrainzngs.set_useragent("MonTestMusic", "0.1", "mon@email.com")
 
 
 def traiter_fichier_mp3(chemin_fichier: Path):
@@ -14,15 +14,14 @@ def traiter_fichier_mp3(chemin_fichier: Path):
         audio = EasyID3(chemin_fichier)
 
         # On accède aux tags comme à un dictionnaire
-        # .get() est plus sûr : si le tag n'existe pas, il renverra "Inconnu" au lieu de planter
+        # .get() est plus sûr : si le tag n'existe pas, il renverra "xxx Inconnu" au lieu de planter
         liste_artiste = audio.get("artist", [])
         liste_titre = audio.get("title", [])
         liste_album = audio.get("album", [])
-        # liste_date = audio.get("date", [])
+
         artiste = liste_artiste[0] if liste_artiste else "Artiste Inconnu"
         titre = liste_titre[0] if liste_titre else "Titre Inconnu"
         album = liste_album[0] if liste_album else "Album Inconnu"
-        # date = liste_date[0] if liste_date else "Date Inconnue"
 
         if artiste == "Artiste Inconnu" or titre == "Titre Inconnu":
             nom_pur = chemin_fichier.stem
@@ -73,9 +72,9 @@ def obtenir_liste_unique(artiste, titre):
 
     def extraire_annee(album):
         date_brute = album.get("date", "9999")  # 9999 si inconnu pour le mettre à la fin
-        return date_brute[:4]  # On ne prend que les 4 premiers caractères
+        return date_brute[:4]  # Que les 4 premiers caractères qui contiennent l'année
 
-    # On trie la liste 'choix_finaux' en place
+    # Tri de la liste 'choix_finaux' sur l'année
     choix_finaux.sort(key=extraire_annee)
 
     return choix_finaux
@@ -83,17 +82,16 @@ def obtenir_liste_unique(artiste, titre):
 
 def main():
     """Point d'entrée principal du programme."""
-    # 1. Définir le dossier (plus tard, on pourra passer ça en argument)
+
     dossier = Path("/mnt/data/python/Music/mp3_tests")
 
     print(f"--- Analyse du dossier : {dossier} ---")
 
-    # 2. Vérifier si le dossier existe
     if not dossier.exists():
         print(f"Erreur : Le dossier {dossier} est introuvable.")
         return
 
-    # 3. Boucle sur les fichiers
+    # Boucle sur les fichiers
     morceaux_a_completer: list[list[str]] = []
     for fichier in dossier.glob("*.mp3"):
         infos = traiter_fichier_mp3(fichier)
@@ -110,7 +108,7 @@ def main():
             print("Désolé, aucun album trouvé sur MusicBrainz.")
             continue
 
-        # 1. Affiche les options numérotées
+        # Affiche les options numérotées
         for i, album_data in enumerate(options, 1):
             nom = album_data.get("title")
             annee = album_data.get("date", "????")
@@ -119,11 +117,8 @@ def main():
         print("m. Saisir le nom de l'album")
         print("0. Passer ce morceau")
         print("q. Quitter le programme")
-
-        # 2. Demande le choix à l'utilisateur
         reponse = input("Votre choix : ")
 
-        # 3. Logique de sélection (à toi de jouer !)
         if reponse == "0":
             continue
         if reponse.lower() == "q":
@@ -144,7 +139,7 @@ def main():
 
         audio["album"] = album_final
         if annee_finale:
-            audio["date"] = album_final[:4]  # On enregistre juste l'année
+            audio["date"] = album_final[:4]  # Seule l'année est conservée en cas de date yyyy-mm-dd
 
         audio.save()
         print("Fichier mis à jour avec succès !")
