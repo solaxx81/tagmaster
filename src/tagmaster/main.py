@@ -1,8 +1,10 @@
 from pathlib import Path
 
 import musicbrainzngs
+import requests
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3
+from mutagen.id3._frames import APIC
 
 # Configuration obligatoire pour que MusicBrainz réponde
 musicbrainzngs.set_useragent("MonTestMusic", "0.1", "mon@email.com")
@@ -83,6 +85,35 @@ def obtenir_liste_unique(artiste, titre):
     return choix_finaux
 
 
+def ajouter_pochette(chemin_fichier, release_id):
+    """Télécharge la pochette depuis Cover Art Archive et l'insère dans le MP3."""
+    url = f"https://coverartarchive.org/release/{release_id}/front-500"
+
+    try:
+        reponse = requests.get(url, timeout=10)
+        if reponse.status_code == 200:
+            try:
+                tags = ID3(chemin_fichier)
+            except Exception:
+                tags = ID3()
+
+            tags.add(
+                APIC(
+                    encoding=3,  # UTF-8
+                    mime="image/jpeg",  # format standard
+                    type=3,  # 3 = pochette avant
+                    desc="Front Cover",
+                    data=reponse.content,
+                )
+            )
+            tags.save(chemin_fichier)
+            return True
+    except Exception as e:
+        print(f"      ⚠️ Erreur pochette : {e}")
+
+    return False
+
+
 def main():
     """Point d'entrée principal du programme."""
 
@@ -102,8 +133,11 @@ def main():
         if infos:
             morceaux_a_completer.append(infos)
 
-    for artiste, titre, chemin in morceaux_a_completer:
-        print(f"\nRecherche pour : {artiste} - {titre}")
+    for artiste, titre, album_actuel, chemin, a_pochette in morceaux_a_completer:
+        statut_poche = "✅" if a_pochette else "❌ Sans pochette"
+        print(f"\n--- Analyse de : {artiste} - {titre} ---")
+        print(f"   Album actuel dans le tag : {album_actuel}")
+        print(f"   Pochette : {statut_poche}")
 
         options = obtenir_liste_unique(artiste, titre)
 
@@ -137,15 +171,26 @@ def main():
             album_final = album_choisi["title"]
             annee_finale = album_choisi.get("date", "")[:4]
 
-        print(f"Vous avez choisi : {album_choisi['title']}")
-        audio = EasyID3(chemin)
+        print(f"👉 Validation : {album_final}")
 
+        audio = EasyID3(chemin)
         audio["album"] = album_final
         if annee_finale:
-            audio["date"] = album_final[:4]  # Seule l'année est conservée en cas de date yyyy-mm-dd
+            audio["date"] = annee_finale[:4]  # Seule l'année est conservée en cas de date yyyy-mm-dd
 
         audio.save()
-        print("Fichier mis à jour avec succès !")
+
+        if reponse.lower() != "m":
+            release_id = album_choisi.get("id")
+            if release_id:
+                print("   🔍 Recherche d'une pochette sur MusicBrainz...")
+                succes = ajouter_pochette(chemin, release_id)
+                if succes:
+                    print("   🎨 Pochette intégrée avec succès !")
+                else:
+                    print("   ℹ️ Pas de pochette trouvée pour cet album.")
+
+        print("✅ Tags texte mis à jour !")
 
 
 if __name__ == "__main__":
