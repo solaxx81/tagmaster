@@ -6,4 +6,4 @@ Exemple : [Album "Away From The Sun"](https://musicbrainz.org/release/216a78c6-b
 
 [doc mutagen](https://mutagen.readthedocs.io/en/latest/)
 
-[Biblithèque musicbrainzngs](https://python-musicbrainzngs.readthedocs.io/en/v0.7.1/api/#general)
+[Bibliothèque musicbrainzngs](https://python-musicbrainzngs.readthedocs.io/en/v0.7.1/api/#general)
